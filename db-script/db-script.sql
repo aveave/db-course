@@ -36,7 +36,8 @@ CREATE TABLE booking_schema.address (
 
 CREATE TABLE booking_schema.apartment (
     apartment_id serial NOT NULL,
-    apartment_type_id bigint,
+    contacts varchar(50),
+    apartment_type_id bigint NOT NULL,
     address_id bigint
 );
 
@@ -51,25 +52,29 @@ CREATE TABLE booking_schema.booking (
     booking_status varchar(30),
     start_date timestamp with time zone,
     end_date timestamp with time zone,
-    payment_id bigint
+    customer_id bigint,
+    room_id bigint,
+    payment_id bigint,
+    CONSTRAINT booking_dates CHECK (start_date <= end_date)
 );
 
 
 CREATE TABLE booking_schema.customer (
     customer_id serial NOT NULL,
-    firstname varchar(255),
+    firstname varchar(255) NOT NULL,
     middlename varchar(255),
-    lastname varchar(255),
-    gender integer,
+    lastname varchar(255) NOT NULL,
+    gender integer NOT NULL,
     birth_date date,
-    customer_type varchar(50),
-    address_id bigint
+    customer_type varchar(50) NOT NULL,
+    address_id bigint,
+    CONSTRAINT birth_date_check CHECK (birth_date <= CURRENT_DATE)
 );
 
 CREATE TABLE booking_schema.customer_booking (
-    id serial NOT NULL,
-    customer_id serial NOT NULL,
-    booking_id serial NOT NULL
+    customer_id bigint NOT NULL,
+    booking_id bigint NOT NULL,
+    unique (customer_id, booking_id)
 );
 
 CREATE TABLE booking_schema.facility (
@@ -78,23 +83,40 @@ CREATE TABLE booking_schema.facility (
 );
 
 CREATE TABLE booking_schema.payment (
-    id serial NOT NULL,
+    payment_id serial NOT NULL,
     cost numeric,
     card_number varchar(20),
-    bank varchar(50)
+    payment_method varchar(50) NOT NULL,
+    bank varchar(50),
     CONSTRAINT positive_payment CHECK (cost > 0)
 );
 
 CREATE TABLE booking_schema.room (
     room_id serial NOT NULL,
-    room_floor varchar(10),
-    room_number varchar(10)
+    room_floor varchar(10) NOT NULL,
+    room_number varchar(10) NOT NULL,
+    room_type_id bigint NOT NULL,
+    apartment_id bigint
+);
+
+CREATE TABLE booking_schema.room_type (
+    room_type_id serial NOT NULL,
+    room_type_name varchar(50)
 );
 
 CREATE TABLE booking_schema.room_facility (
-    id serial NOT NULL,
-    room_id serial NOT NULL,
-    facility_id serial NOT NULL
+    room_id bigint NOT NULL,
+    facility_id bigint NOT NULL,
+    unique(room_id, facility_id)
+);
+
+CREATE TABLE booking_schema.room_price (
+    room_price_id serial NOT NULL,
+    price numeric NOT NULL,
+    info_date date NOT NULL,
+    is_available boolean NOT NULL,
+    room_id  bigint,
+    CONSTRAINT price_positive CHECK (price > 0)  
 );
 
 
@@ -115,11 +137,6 @@ ALTER TABLE ONLY booking_schema.apartment_type
 ALTER TABLE ONLY booking_schema.booking
     ADD CONSTRAINT booking_pkey PRIMARY KEY (booking_id);
 
-
-ALTER TABLE ONLY booking_schema.customer_booking
-    ADD CONSTRAINT customer_booking_pkey PRIMARY KEY (id);
-
-
 ALTER TABLE ONLY booking_schema.customer
     ADD CONSTRAINT customer_pkey PRIMARY KEY (customer_id);
 
@@ -129,15 +146,14 @@ ALTER TABLE ONLY booking_schema.facility
 
 
 ALTER TABLE ONLY booking_schema.payment
-    ADD CONSTRAINT payment_pkey PRIMARY KEY (id);
-
-
-ALTER TABLE ONLY booking_schema.room_facility
-    ADD CONSTRAINT room_facility_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT payment_pkey PRIMARY KEY (payment_id);
 
 
 ALTER TABLE ONLY booking_schema.room
     ADD CONSTRAINT room_pkey PRIMARY KEY (room_id);
+
+ALTER TABLE ONLY booking_schema.room_price
+    ADD CONSTRAINT room_price_pkey PRIMARY KEY (room_price_id);
 
 
 
@@ -163,8 +179,12 @@ ALTER TABLE ONLY booking_schema.room_facility
 
 
 ALTER TABLE ONLY booking_schema.booking
-    ADD CONSTRAINT payment_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES booking_schema.payment(id);
+    ADD CONSTRAINT payment_payment_id_fkey FOREIGN KEY (payment_id) REFERENCES booking_schema.payment(payment_id);
 
 
 ALTER TABLE ONLY booking_schema.room_facility
     ADD CONSTRAINT room_id_fkey FOREIGN KEY (room_id) REFERENCES booking_schema.room(room_id);
+
+ALTER TABLE ONLY booking_schema.room_price
+    ADD CONSTRAINT room_id_fkey FOREIGN KEY (room_id) REFERENCES booking_schema.room(room_id);
+    
