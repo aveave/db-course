@@ -96,6 +96,7 @@ CREATE TABLE booking_schema.room (
     room_floor varchar(10) NOT NULL,
     room_number varchar(10) NOT NULL,
     room_type_id bigint NOT NULL,
+    description text,
     apartment_id bigint
 );
 
