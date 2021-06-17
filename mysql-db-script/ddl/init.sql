@@ -29,8 +29,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `online_store`.`cart` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `sum` DECIMAL(13,2) NULL,
-  `count` INT NULL,
-  `product_id` INT NULL,
+  `count` INT NULL
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
