@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS `online_store`.`product` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NULL,
   `price` DECIMAL(13,2) NULL,
+  `title` VARCHAR(255) NULL,
+  `description` TEXT NULL,
   `weight` DECIMAL(5,1) NULL,
   `quantity` INT NULL,
   `characteristics` JSON NULL,
